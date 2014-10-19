@@ -71,7 +71,7 @@ void Json::Boolean::dumpTo(std::ostream &out, int indent) const {
 void Json::Array::dumpTo(std::ostream &out, int indent) const {
     out << "[" << endl;
     bool first = true;
-    for(Value *v: values){
+    for(std::shared_ptr<Value> v: values){
         if(!first){
             out << "," << endl;
         }
@@ -87,7 +87,7 @@ void Json::Array::dumpTo(std::ostream &out, int indent) const {
 void Json::Object::dumpTo(std::ostream &out, int indent) const {
     out << "{" << endl;
     bool first = true;
-    for(std::pair<std::string, Value *> const & kv: values){
+    for(std::pair<std::string, std::shared_ptr<Value>> const & kv: values){
         if(!first){
             out << "," << endl;
         }

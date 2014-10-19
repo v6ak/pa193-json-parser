@@ -1,19 +1,23 @@
 #include <iostream>
 #include "json.h"
 
-using namespace std;
+using std::shared_ptr;
+using std::cout;
+using std::endl;
+using std::make_shared;
+namespace J = Json;
 
 int main() {
-    Json::Number num(3.14159265358972);
-    Json::String s("5.\" ' \1 0");
-    Json::Boolean t(true);
-    Json::Boolean f(false);
-    Json::Array a = {{&s, &t, &f, &num}};
-    Json::Object o  = {{{"num", &num}, {"t", &t}, {"a", &a}}};
-    cout << num << endl << s << endl << endl;
-    cout << Json::null << " " << t << " " << f << endl;
-    cout << "a: " << a << endl;
-    cout << "o: " << o << endl;
+    auto num = make_shared<J::Number>(3.14159265358972);
+    auto s = make_shared<J::String>("5.\" ' \1 0");
+    auto t = make_shared<J::Boolean>(true);
+    auto f = make_shared<J::Boolean>(false);
+    auto a = make_shared<J::Array>(J::Array({s, t, f, num}));
+    auto o = make_shared<J::Object>(J::Object({{"num", num}, {"t", t}, {"a", a}}));
+    cout << *num << endl << *s << endl << endl;
+    cout << J::null << " " << *t << " " << *f << endl;
+    cout << "a: " << *a << endl;
+    cout << "o: " << *o << endl;
 
     return 0;
 }

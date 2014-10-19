@@ -2,6 +2,7 @@
 #include <ostream>
 #include <vector>
 #include <map>
+#include <memory>
 
 namespace Json {
 
@@ -49,23 +50,21 @@ namespace Json {
     };
 
     class Array: public Value{
-    // TODO: deallocation
     // TODO: safety
     private:
-        std::vector<Value*> values;
+        std::vector<std::shared_ptr<Value>> values;
     public:
-        Array(std::initializer_list<Value*> values): values(values) {};
+        Array(std::initializer_list<std::shared_ptr<Value>> values): values(values) {};
 
         virtual void dumpTo(std::ostream &out, int indent) const;
     };
 
     class Object: public Value{
-    // TODO: deallocation
     // TODO: safety
     private:
-        std::map<std::string, Value*> values;
+        std::map<std::string, std::shared_ptr<Value>> values;
     public:
-        Object(std::map<std::string, Value*> values): values(values) {};
+        Object(std::map<std::string, std::shared_ptr<Value>> values): values(values) {};
         virtual void dumpTo(std::ostream &out, int indent) const;
     };
 

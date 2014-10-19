@@ -4,12 +4,19 @@
 #include <map>
 #include <memory>
 
+using std::shared_ptr;
+using std::ostream;
+using std::string;
+using std::vector;
+using std::initializer_list;
+using std::map;
+
 namespace Json {
 
 
     class Value{
     public:
-        virtual void dumpTo(std::ostream &out, int indent) const = 0;
+        virtual void dumpTo(ostream &out, int indent) const = 0;
     };
 
 
@@ -19,7 +26,7 @@ namespace Json {
         double value;
     public:
         Number(double value): value(value) {}
-        virtual void dumpTo(std::ostream &out, int indent) const;
+        virtual void dumpTo(ostream &out, int indent) const;
     };
 
 
@@ -27,17 +34,17 @@ namespace Json {
     // TODO: look at unicode
     // FIXME: Unprintable characters
     private:
-        std::string value;
+        string value;
     public:
-        String(std::string value): value(value) {}
-        virtual void dumpTo(std::ostream &out, int indent) const;
+        String(string value): value(value) {}
+        virtual void dumpTo(ostream &out, int indent) const;
     };
 
     class Null: public Value{
     public:
         Null(){}
         static const Null value;
-        virtual void dumpTo(std::ostream &out, int indent) const;
+        virtual void dumpTo(ostream &out, int indent) const;
     };
     const Null null;
 
@@ -46,29 +53,29 @@ namespace Json {
         bool value;
     public:
         Boolean(bool value): value(value) {};
-        virtual void dumpTo(std::ostream &out, int indent) const;
+        virtual void dumpTo(ostream &out, int indent) const;
     };
 
     class Array: public Value{
     // TODO: safety
     private:
-        std::vector<std::shared_ptr<Value>> values;
+        vector<shared_ptr<Value>> values;
     public:
-        Array(std::initializer_list<std::shared_ptr<Value>> values): values(values) {};
+        Array(initializer_list<shared_ptr<Value>> values): values(values) {};
 
-        virtual void dumpTo(std::ostream &out, int indent) const;
+        virtual void dumpTo(ostream &out, int indent) const;
     };
 
     class Object: public Value{
     // TODO: safety
     private:
-        std::map<std::string, std::shared_ptr<Value>> values;
+        map<string, shared_ptr<Value>> values;
     public:
-        Object(std::map<std::string, std::shared_ptr<Value>> values): values(values) {};
-        virtual void dumpTo(std::ostream &out, int indent) const;
+        Object(map<string, shared_ptr<Value>> values): values(values) {};
+        virtual void dumpTo(ostream &out, int indent) const;
     };
 
 
-    std::ostream& operator<<(std::ostream& os, const Value& value);
+    ostream& operator<<(ostream& os, const Value& value);
 
 }

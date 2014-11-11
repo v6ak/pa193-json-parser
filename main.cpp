@@ -3,6 +3,8 @@
 
 using std::shared_ptr;
 using std::cout;
+using std::cin;
+using std::cerr;
 using std::endl;
 using std::make_shared;
 namespace J = Json;
@@ -18,6 +20,13 @@ int main() {
     cout << J::null << " " << *t << " " << *f << endl;
     cout << "a: " << *a << endl;
     cout << "o: " << *o << endl;
+    try {
+        auto rn = J::Value::readFrom(cin);
+        cout << "rn: " << *rn << endl;
+    }catch(std::string error){
+        cerr << "Error: " << error << endl;
+        return 1;
+    }
 
     return 0;
 }

@@ -6,6 +6,7 @@
 
 using std::shared_ptr;
 using std::ostream;
+using std::istream;
 using std::string;
 using std::vector;
 using std::initializer_list;
@@ -17,7 +18,8 @@ namespace Json {
     class Value{
     public:
         virtual void dumpTo(ostream &out, int indent) const = 0;
-    };
+        static shared_ptr<Value> readFrom(istream &in);
+	};
 
 
     class Number : public Value{
@@ -27,6 +29,7 @@ namespace Json {
     public:
         Number(double value): value(value) {}
         virtual void dumpTo(ostream &out, int indent) const;
+        static shared_ptr<Number> readNumberFrom(istream &in);
     };
 
 
@@ -38,7 +41,9 @@ namespace Json {
     public:
         String(string value): value(value) {}
         virtual void dumpTo(ostream &out, int indent) const;
-    };
+        string getValue() {return value;}
+        static shared_ptr<String> readStringFrom(istream &in);
+	};
 
     class Null: public Value{
     public:
@@ -46,7 +51,7 @@ namespace Json {
         static const Null value;
         virtual void dumpTo(ostream &out, int indent) const;
     };
-    const Null null;
+    const auto null = std::make_shared<Null>();
 
     class Boolean: public Value{
     private:
@@ -64,6 +69,7 @@ namespace Json {
         Array(initializer_list<shared_ptr<Value>> values): values(values) {};
 
         virtual void dumpTo(ostream &out, int indent) const;
+        //static shared_ptr<Number> readNumberFrom(istream &in);
     };
 
     class Object: public Value{

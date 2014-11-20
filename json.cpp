@@ -67,7 +67,7 @@ void Json::String::dumpTo(ostream &out, int indent) const {
                     out << c;
                 }else{
                     stringstream ss;
-                    ss << hex << setw(4) << (int)c;
+                    ss << hex << setw(4) << (0xffff&(uint32_t)c);
                     out << "\\u" << ss;
                 }
         }
@@ -154,35 +154,6 @@ shared_ptr<Json::Number> Json::Number::readNumberFrom(istream &in) {
     return make_shared<Json::Number>(x);
 }
 
-void x() {
-	size_t inSize = 2;
-	//char src[1];
-	int n1 = 65;
-	int n2 = 66;
-	char* src = new char[2]; //(char*)malloc(2*sizeof(char));	// TODO: static allocation;
-	src[0] = (char) n1;
-	src[1] = (char) n2;
-	std::cout << "src[1] = " << src[1] << endl;
-	//std::cout << "src[2] = " << src[2] << endl;
-	for(int i=0; i<inSize; i++){
-		std::cout << "src[";
-		std::cout << i;
-		std::cout << "] = ";
-		std::cout << src[i];
-		std::cout << "endl\n";
-
-		/*std::cout << "pSrc[";
-		std::cout << i;
-		std::cout << "] = ";
-		std::cout << " = ";
-		std::cout << pSrc[i];
-		std::cout << ";";
-		std::cout << "endl\n";*/
-	}
-
-}
-
-
 shared_ptr<Json::String> Json::String::readStringFrom(istream &in) {
     consumeWhitespace(in);
 	consumeQuote(in);
@@ -219,131 +190,13 @@ shared_ptr<Json::String> Json::String::readStringFrom(istream &in) {
 						ss << '\t';
 						break;
 					case 'u': {
-						char hexa[4];
-						in.read(hexa, sizeof(hexa) / sizeof(hexa[0]));
-						stringstream hexass;
-						for (int i = 0; i < sizeof(hexa) / sizeof(hexa[0]); i++) {
-							hexass << hexa[i];
-						}
-						//long n;
-						int n1, n2;
-						hexass >> std::hex >> setw(2) >> n1 >> n2;
-						checkNotEof(in);
-						size_t inSize = 2;
-						//char src[1];
-						x();
-						{
-							// just clone of problematic part of code, it does not raise any warning
-							size_t inSize1 = 2;
-							//char src[1];
-							int n11 = 65;
-							int n21 = 66;
-							char* src = new char[2]; //(char*)malloc(2*sizeof(char));	// TODO: static allocation;
-							src[0] = (char) n11;
-							src[1] = (char) n21;
-							std::cout << "src[1] = " << src[1] << endl;
-							//std::cout << "src[2] = " << src[2] << endl;
-							for(int i=0; i< inSize1; i++){
-								std::cout << "src[";
-								std::cout << i;
-								std::cout << "] = ";
-								std::cout << src[i];
-								std::cout << "endl\n";
-
-								/*std::cout << "pSrc[";
-								std::cout << i;
-								std::cout << "] = ";
-								std::cout << " = ";
-								std::cout << pSrc[i];
-								std::cout << ";";
-								std::cout << "endl\n";*/
-							}
-						}
-						char* src = new char[20]; //(char*)malloc(2*sizeof(char));	// TODO: static allocation;
-						src[0] = (char) n1;
-						src[1] = (char) n2;
-						for(int i=2; i<20; i++){src[i] = 'X';};
-						std::cout << "src[1] = " << src[1] << endl;
-						for(int i=0; i<inSize; i++){
-							std::cout << "src[";
-							std::cout << i;
-							std::cout << "] = ";
-							std::cout << src[i];
-							std::cout << "endl\n";
-
-							/*std::cout << "pSrc[";
-							std::cout << i;
-							std::cout << "] = ";
-							std::cout << " = ";
-							std::cout << pSrc[i];
-							std::cout << ";";
-							std::cout << "endl\n";*/
-						}
-						iconv_t ic = iconv_open(""/*"UTF-8"*/, "UCS-2"); // TODO: autoclose
-						if (ic == (iconv_t)(-1)){
-							throw std::string("Can't convert characters");
-						}
-
-						char* pSrc = src;
-						while(inSize > 0){
-							size_t outSize = 1;
-							char out[outSize];
-							char* pOut = out;
-							std::cout << "iconv()" << inSize << std::endl;
-							size_t res = iconv(ic, &pSrc, &inSize, &pOut, &outSize);
-							if(res == (size_t)-1){
-								switch (errno){
-									case E2BIG:
-										// continue
-										break;
-									case EILSEQ:
-										throw std::string("Unexpected rejected characters - EILSEQ");
-									case EINVAL:
-										throw std::string("Unexpected rejected characters - EINVAL");
-									default:
-										throw std::string("Unknown conversion errno.");
-								}
-							}else{
-								size_t copySize = LENGTH(out) - outSize;
-								for(int i=0; i<copySize; i++){
-									ss << out[i];
-									std::cout << "copy: " << (int)out[i] << " " << out[i] << std::endl;
-								}
-								std::cout << "res = " << (int)res << std::endl;
-							};
-						}
-						iconv_close(ic);
-						/*
-						wchar_t cn = (wchar_t)n;
-						wchar_t cns[2];
-						cns[0] = cn;
-						cns[1] = '\0';
-						std::wstringstream wss;
-						wss << cn;
-						//std::locale loc (std::locale(), );
-
-						ss.imbue(loc);
-						//iconv_t ic = iconv_open("UTF-8", "UCS-2");
-						if (ic == (iconv_t)(-1)){
-							throw std::string("Can't convert characters");
-						}
-						ss << wss.str();
-						ss << "(|" << cn << "|)";
-						ss << "u(" << n << ")";
-						ss << cn;
-						*/
-
-						// TODO: check error
-						//throw std::string("TODO: implement: \\u")+n; // TODO
+						parseHexaStringSequence(in, ss);
 						break;
 					}
 					default:
 						throw std::string("Unexpected character: ")+c2;
-
 				}
 				break;
-
-				// TODO
 			default:
 				ss << c;
 		}
@@ -386,4 +239,74 @@ shared_ptr<Json::Value> Json::Value::readFrom(istream &in) {
             }
             throw std::string("Unexpected character: ")+c;
     }
+}
+
+int hexDigitToInt(char c){
+	if(('a' <= c) && (c <= 'f')){
+		return c-'a'+10;
+	}
+	if(('A' <= c) && (c <= 'F')){
+		return c-'A'+10;
+	}
+	if(('0' <= c) && (c <= '9')){
+		return c-'0'+0;
+	}
+	throw std::string("bad hexa character");
+}
+
+int charToInt(char c){
+	return 0xff & ((int)c);
+}
+
+void swap(char &c1, char &c2){
+	char tmp = c1;
+	c1 = c2;
+	c2 = tmp;
+}
+
+void Json::String::parseHexaStringSequence(istream &in, stringstream &ss) {
+	char src[2];
+	for(int i=0; i<2; i++){
+		char cs[2];
+		in.read(cs, 2);
+		if(!in.good()){
+			throw std::string("Bad \\uXXXX escape sequence");
+		}
+		src[i] = (char) (hexDigitToInt(cs[0])*16 + hexDigitToInt(cs[1]));
+	}
+
+	swap(src[0], src[1]);	// fix byte order - big endian vs. little endian
+
+	size_t inSize = 2;
+	iconv_t ic = iconv_open("UTF-8", "UCS-2"); // TODO: autoclose
+	if (ic == (iconv_t)(-1)){
+		throw std::string("Can't convert characters");
+	}
+
+	char* pSrc = src;
+	while(inSize > 0){
+		size_t outSize = 16;
+		char out[outSize];
+		char* pOut = out;
+		size_t res = iconv(ic, &pSrc, &inSize, &pOut, &outSize);
+		if(res == (size_t)-1){
+			switch (errno){
+				case E2BIG:
+					// continue
+					break;
+				case EILSEQ:
+					throw std::string("Unexpected rejected characters - EILSEQ");
+				case EINVAL:
+					throw std::string("Unexpected rejected characters - EINVAL");
+				default:
+					throw std::string("Unknown conversion errno.");
+			}
+		}else{
+			size_t copySize = LENGTH(out) - outSize;
+			for(int i=0; i<copySize; i++){
+				ss << out[i];
+			}
+		};
+	}
+	iconv_close(ic);
 }

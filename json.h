@@ -34,14 +34,15 @@ namespace Json {
 
 
     class String : public Value{
-    // TODO: look at unicode
     // FIXME: Unprintable characters
     private:
         string value;
-    public:
-        String(string value): value(value) {}
-        virtual void dumpTo(ostream &out, int indent) const;
-        string getValue() {return value;}
+		static void parseHexaStringSequence(istream &in, std::stringstream &ss);
+	public:
+		String(string value): value(value) {}
+		virtual void dumpTo(ostream &out, int indent) const;
+		string getValue() {return value;}
+
         static shared_ptr<String> readStringFrom(istream &in);
 	};
 

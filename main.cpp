@@ -11,8 +11,8 @@ namespace J = Json;
 
 void help(char* name){
 	cout << "Usage: " << endl <<
-			"\t" << name << " read-string" << "parses a JSON string and outputs its content" << endl <<
-			"\t" << name << " read-json" << "parses a JSON value and outputs it reserializad. Note thatsome special characters are wrongly escaped to Unicode." << endl;
+			"\t" << name << " read-string" << "\tparses a JSON string and outputs its content" << endl <<
+			"\t" << name << " read-json" << "\tparses a JSON value and outputs it reserializad. Note thatsome special characters are wrongly escaped to Unicode." << endl;
 	cout << endl << endl << "We assume that the input is a valid UTF-8." << endl;
 }
 
@@ -23,6 +23,14 @@ int main(int argc, char** argv) {
 			try{
 				auto jstring = J::String::readStringFrom(cin);
 				cout << jstring->getValue();
+			}catch(std::string error){
+				cerr << "Error: " << error << endl;
+				return 1;
+			}
+		}else if(name == "read-number"){
+			try{
+				auto jnumber = J::Number::readNumberFrom(cin);
+				printf("%.5f", jnumber->getValue());
 			}catch(std::string error){
 				cerr << "Error: " << error << endl;
 				return 1;
@@ -49,10 +57,10 @@ int main(int argc, char** argv) {
 		}else{
 			cerr << "unknown action: " << name;
 			help(argv[0]);
+			return 1;
 		}
+	}else{
+		help(argv[0]);
 	}
-
-	help(argv[0]);
-
 	return 0;
 }

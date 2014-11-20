@@ -29,6 +29,7 @@ namespace Json {
 	public:
 		Number(double value): value(value) {}
 		virtual void dumpTo(ostream &out, int indent) const;
+		double getValue(){return value;};
 		static shared_ptr<Number> readNumberFrom(istream &in);
 	};
 

@@ -15,74 +15,74 @@ using std::map;
 namespace Json {
 
 
-    class Value{
-    public:
-        virtual void dumpTo(ostream &out, int indent) const = 0;
-        static shared_ptr<Value> readFrom(istream &in);
+	class Value{
+	public:
+		virtual void dumpTo(ostream &out, int indent) const = 0;
+		static shared_ptr<Value> readFrom(istream &in);
 	};
 
 
-    class Number : public Value{
-    // TODO: precision etc.
-    private:
-        double value;
-    public:
-        Number(double value): value(value) {}
-        virtual void dumpTo(ostream &out, int indent) const;
-        static shared_ptr<Number> readNumberFrom(istream &in);
-    };
+	class Number : public Value{
+	// TODO: precision etc.
+	private:
+		double value;
+	public:
+		Number(double value): value(value) {}
+		virtual void dumpTo(ostream &out, int indent) const;
+		static shared_ptr<Number> readNumberFrom(istream &in);
+	};
 
 
-    class String : public Value{
-    // FIXME: Unprintable characters
-    private:
-        string value;
+	class String : public Value{
+	// FIXME: Unprintable characters
+	private:
+		string value;
 		static void parseHexaStringSequence(istream &in, std::stringstream &ss);
 	public:
 		String(string value): value(value) {}
 		virtual void dumpTo(ostream &out, int indent) const;
 		string getValue() {return value;}
 
-        static shared_ptr<String> readStringFrom(istream &in);
+		static shared_ptr<String> readStringFrom(istream &in);
 	};
 
-    class Null: public Value{
-    public:
-        Null(){}
-        static const Null value;
-        virtual void dumpTo(ostream &out, int indent) const;
-    };
-    const auto null = std::make_shared<Null>();
+	class Null: public Value{
+	public:
+		Null(){}
+		static const Null value;
+		virtual void dumpTo(ostream &out, int indent) const;
+	};
+	const auto null = std::make_shared<Null>();
 
-    class Boolean: public Value{
-    private:
-        bool value;
-    public:
-        Boolean(bool value): value(value) {};
-        virtual void dumpTo(ostream &out, int indent) const;
-    };
+	class Boolean: public Value{
+	private:
+		bool value;
+	public:
+		Boolean(bool value): value(value) {};
+		virtual void dumpTo(ostream &out, int indent) const;
+	};
 
-    class Array: public Value{
-    // TODO: safety
-    private:
-        vector<shared_ptr<Value>> values;
-    public:
-        Array(initializer_list<shared_ptr<Value>> values): values(values) {};
+	class Array: public Value{
+	// TODO: safety
+	private:
+		vector<shared_ptr<Value>> values;
+	public:
+		Array(initializer_list<shared_ptr<Value>> values): values(values) {};
 
-        virtual void dumpTo(ostream &out, int indent) const;
-        //static shared_ptr<Number> readNumberFrom(istream &in);
-    };
+		virtual void dumpTo(ostream &out, int indent) const;
+		//static shared_ptr<Number> readNumberFrom(istream &in);
+	};
 
-    class Object: public Value{
-    // TODO: safety
-    private:
-        map<string, shared_ptr<Value>> values;
-    public:
-        Object(map<string, shared_ptr<Value>> values): values(values) {};
-        virtual void dumpTo(ostream &out, int indent) const;
-    };
+	class Object: public Value{
+	// TODO: safety
+	private:
+		map<string, shared_ptr<Value>> values;
+	public:
+		Object(map<string, shared_ptr<Value>> values): values(values) {};
+		virtual void dumpTo(ostream &out, int indent) const;
+	};
 
 
-    ostream& operator<<(ostream& os, const Value& value);
+	ostream& operator<<(ostream& os, const Value& value);
 
 }

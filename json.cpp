@@ -19,109 +19,109 @@ using std::shared_ptr;
 
 
 void writeIndentation(ostream &out, int indent) {
-    for(int i=0; i<indent; i++){
-        out << "\t";
-    }
+	for(int i=0; i<indent; i++){
+		out << "\t";
+	}
 }
 
 
 ostream &::Json::operator<<(ostream &os, Json::Value const &value) {
-    value.dumpTo(os, 0);
-    return os;
+	value.dumpTo(os, 0);
+	return os;
 }
 
 void Json::Number::dumpTo(ostream &out, int indent) const{
-    out << value;
+	out << value;
 }
 
 void Json::String::dumpTo(ostream &out, int indent) const {
-    out << "\"";
-    for(char c: value){
-        switch (c){
-            case '\"':
-                out << "\\\"";
-                break;
-            case '\\':
-                out << "\\\\";
-                break;
-            case '/':
-                out << "/";
-                break;
-            case '\b':
-                out << "\\b";
-                break;
-            case '\f':
-                out << "\\f";
-                break;
-            case '\n':
-                out << "\\n";
-                break;
-            case '\r':
-                out << "\\r";
-                break;
-            case '\t':
-                out << "\\t";
-                break;
-            default:
-                if(isprint(c)){
-                    out << c;
-                }else{
-                    stringstream ss;
-                    ss << hex << setw(4) << (0xffff&(uint32_t)c);
-                    out << "\\u" << ss;
-                }
-        }
-    }
-    out << "\"";
+	out << "\"";
+	for(char c: value){
+		switch (c){
+			case '\"':
+				out << "\\\"";
+				break;
+			case '\\':
+				out << "\\\\";
+				break;
+			case '/':
+				out << "/";
+				break;
+			case '\b':
+				out << "\\b";
+				break;
+			case '\f':
+				out << "\\f";
+				break;
+			case '\n':
+				out << "\\n";
+				break;
+			case '\r':
+				out << "\\r";
+				break;
+			case '\t':
+				out << "\\t";
+				break;
+			default:
+				if(isprint(c)){
+					out << c;
+				}else{
+					stringstream ss;
+					ss << hex << setw(4) << (0xffff&(uint32_t)c);
+					out << "\\u" << ss;
+				}
+		}
+	}
+	out << "\"";
 }
 
 void Json::Null::dumpTo(ostream &out, int indent) const {
-    out << "null";
+	out << "null";
 }
 
 void Json::Boolean::dumpTo(ostream &out, int indent) const {
-    out << (value ? "true" : "false");
+	out << (value ? "true" : "false");
 }
 
 void Json::Array::dumpTo(ostream &out, int indent) const {
-    out << "[" << endl;
-    bool first = true;
-    for(shared_ptr<Value> v: values){
-        if(!first){
-            out << "," << endl;
-        }
-        writeIndentation(out, indent+1);
-        out << *v;
-        first = false;
-    }
-    out << endl;
-    writeIndentation(out, indent);
-    out << "]";
+	out << "[" << endl;
+	bool first = true;
+	for(shared_ptr<Value> v: values){
+		if(!first){
+			out << "," << endl;
+		}
+		writeIndentation(out, indent+1);
+		out << *v;
+		first = false;
+	}
+	out << endl;
+	writeIndentation(out, indent);
+	out << "]";
 }
 
 void Json::Object::dumpTo(ostream &out, int indent) const {
-    out << "{" << endl;
-    bool first = true;
-    for(pair<string, shared_ptr<Value>> const & kv: values){
-        if(!first){
-            out << "," << endl;
-        }
-        writeIndentation(out, indent+1);
-        out << Json::String(kv.first);
-        out << ":";
-        kv.second->dumpTo(out, indent+1);
-        first = false;
-    }
-    out << endl;
-    writeIndentation(out, indent);
-    out << "}";
+	out << "{" << endl;
+	bool first = true;
+	for(pair<string, shared_ptr<Value>> const & kv: values){
+		if(!first){
+			out << "," << endl;
+		}
+		writeIndentation(out, indent+1);
+		out << Json::String(kv.first);
+		out << ":";
+		kv.second->dumpTo(out, indent+1);
+		first = false;
+	}
+	out << endl;
+	writeIndentation(out, indent);
+	out << "}";
 }
 
 void consumeWhitespace(istream &in) {
-    while(iswspace(in.peek())){
-        char whitespace;
-        in.read(&whitespace, 1);
-    }
+	while(iswspace(in.peek())){
+		char whitespace;
+		in.read(&whitespace, 1);
+	}
 }
 
 void checkNotEof(istream &in) {
@@ -146,19 +146,19 @@ inline void consumeQuote(istream &in){
 }
 
 shared_ptr<Json::Number> Json::Number::readNumberFrom(istream &in) {
-    // TODO: proccess errors
+	// TODO: proccess errors
 	// TODO: locale
-    double x;
-    consumeWhitespace(in);
-    in >> x;
-    return make_shared<Json::Number>(x);
+	double x;
+	consumeWhitespace(in);
+	in >> x;
+	return make_shared<Json::Number>(x);
 }
 
 shared_ptr<Json::String> Json::String::readStringFrom(istream &in) {
-    consumeWhitespace(in);
+	consumeWhitespace(in);
 	consumeQuote(in);
 	stringstream ss;
-    char c;
+	char c;
 	while(!in.read(&c, 1).eof()){
 		//std::cout << "Read char: " << c << std::endl;
 		switch (c){
@@ -217,28 +217,28 @@ shared_ptr<Json::Value> tryOrFail(istream &in, const string expect, shared_ptr<J
 }
 
 shared_ptr<Json::Value> Json::Value::readFrom(istream &in) {
-    consumeWhitespace(in);
-    char c = in.peek();
+	consumeWhitespace(in);
+	char c = in.peek();
 	checkNotEof(in);
-    switch(c){
-        case '\"':
-            return String::readStringFrom(in);
-        case '[':
-            //return Array::readArrayFrom(in);
-        case '{':
-            //return Object::readObjectFrom(in);
-        case 't':
-            return tryOrFail(in, "true", make_shared<Json::Boolean>(true));
-        case 'f':
-            return tryOrFail(in, "false", make_shared<Json::Boolean>(false));
-        case 'n':
-            return tryOrFail(in, "null", Json::null);
-        default:
-            if(isdigit(c) || (c == '-')){
-                return Number::readNumberFrom(in);
-            }
-            throw std::string("Unexpected character: ")+c;
-    }
+	switch(c){
+		case '\"':
+			return String::readStringFrom(in);
+		case '[':
+			//return Array::readArrayFrom(in);
+		case '{':
+			//return Object::readObjectFrom(in);
+		case 't':
+			return tryOrFail(in, "true", make_shared<Json::Boolean>(true));
+		case 'f':
+			return tryOrFail(in, "false", make_shared<Json::Boolean>(false));
+		case 'n':
+			return tryOrFail(in, "null", Json::null);
+		default:
+			if(isdigit(c) || (c == '-')){
+				return Number::readNumberFrom(in);
+			}
+			throw std::string("Unexpected character: ")+c;
+	}
 }
 
 int hexDigitToInt(char c){

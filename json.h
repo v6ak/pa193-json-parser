@@ -69,9 +69,11 @@ namespace Json {
 		vector<shared_ptr<Value>> values;
 	public:
 		Array(initializer_list<shared_ptr<Value>> values): values(values) {};
+		Array(vector<shared_ptr<Value>> values): values(values) {};
 
 		virtual void dumpTo(ostream &out, int indent) const;
 		//static shared_ptr<Number> readNumberFrom(istream &in);
+		static shared_ptr<Array> readArrayFrom(istream &in);
 	};
 
 	class Object: public Value{
@@ -81,6 +83,8 @@ namespace Json {
 	public:
 		Object(map<string, shared_ptr<Value>> values): values(values) {};
 		virtual void dumpTo(ostream &out, int indent) const;
+
+		static shared_ptr<Json::Object> readObjectFrom(istream &in);
 	};
 
 

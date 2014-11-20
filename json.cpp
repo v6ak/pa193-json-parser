@@ -132,11 +132,11 @@ void checkNotEof(istream &in) {
 
 
 inline void consumeExpectedCharacter(istream &in, char expectedCharacter) {
-	char quote;
-	in.read(&quote, 1);
+	char actual;
+	in.read(&actual, 1);
 	checkNotEof(in);
-	if(quote != expectedCharacter){
-		throw std::string("Unexpected character: ")+quote;
+	if(actual != expectedCharacter){
+		throw std::string("Unexpected character: ")+ actual +std::string(" (expecting")+expectedCharacter + std::string(")");
 	}
 
 }
@@ -194,7 +194,7 @@ shared_ptr<Json::String> Json::String::readStringFrom(istream &in) {
 						break;
 					}
 					default:
-						throw std::string("Unexpected character: ")+c2;
+						throw std::string("Unexpected character in string escape sequence: ")+c2;
 				}
 				break;
 			default:
@@ -224,9 +224,9 @@ shared_ptr<Json::Value> Json::Value::readFrom(istream &in) {
 		case '\"':
 			return String::readStringFrom(in);
 		case '[':
-			//return Array::readArrayFrom(in);
+			return Array::readArrayFrom(in);
 		case '{':
-			//return Object::readObjectFrom(in);
+			return Object::readObjectFrom(in);
 		case 't':
 			return tryOrFail(in, "true", make_shared<Json::Boolean>(true));
 		case 'f':
@@ -237,7 +237,7 @@ shared_ptr<Json::Value> Json::Value::readFrom(istream &in) {
 			if(isdigit(c) || (c == '-')){
 				return Number::readNumberFrom(in);
 			}
-			throw std::string("Unexpected character: ")+c;
+			throw std::string("Unexpected character when deciding input type: ")+c;
 	}
 }
 
@@ -295,10 +295,13 @@ void Json::String::parseHexaStringSequence(istream &in, stringstream &ss) {
 					// continue
 					break;
 				case EILSEQ:
+					iconv_close(ic);
 					throw std::string("Unexpected rejected characters - EILSEQ");
 				case EINVAL:
+					iconv_close(ic);
 					throw std::string("Unexpected rejected characters - EINVAL");
 				default:
+					iconv_close(ic);
 					throw std::string("Unknown conversion errno.");
 			}
 		}else{
@@ -309,4 +312,71 @@ void Json::String::parseHexaStringSequence(istream &in, stringstream &ss) {
 		};
 	}
 	iconv_close(ic);
+}
+
+shared_ptr<Json::Array> Json::Array::readArrayFrom(istream &in) {
+	vector<shared_ptr<Value>> values;
+	consumeWhitespace(in);
+	consumeExpectedCharacter(in, '[');
+	checkNotEof(in);
+	do{
+		consumeWhitespace(in);
+		if(in.peek() != ']'){
+			values.push_back(Value::readFrom(in));
+		}
+		consumeWhitespace(in);
+		checkNotEof(in);
+		switch (in.peek()){
+			case ',':
+				consumeExpectedCharacter(in, ',');
+				break; // continue to next element
+			case ']':
+				break; // will be stopped
+			default:
+				throw std::string("Unexpected character.");
+		}
+	}while(in.peek() != ']');
+	consumeExpectedCharacter(in, ']');
+	checkNotEof(in);
+
+	return std::make_shared<Json::Array>(Json::Array(values));
+}
+
+shared_ptr<Json::Object> Json::Object::readObjectFrom(istream &in) {
+	map<string, shared_ptr<Value>> props;
+
+	consumeWhitespace(in);
+	consumeExpectedCharacter(in, '{');
+	checkNotEof(in);
+
+	loop:
+	do{
+		consumeWhitespace(in);
+		if(in.peek() != '}'){
+			auto key = String::readStringFrom(in)->getValue();
+			consumeWhitespace(in);
+			consumeExpectedCharacter(in, ':');
+			consumeWhitespace(in);
+			auto value = Value::readFrom(in);
+			props[key] = value;
+			consumeWhitespace(in);
+			checkNotEof(in);
+			switch(in.peek()){
+				case ',':
+					consumeExpectedCharacter(in, ',');
+					break;
+				case '}':
+					break; // will be stopped
+				default:
+					throw std::string("Unexpected character");
+			}
+
+		}
+	}while(in.peek() != '}');
+
+	consumeExpectedCharacter(in, '}');
+
+	checkNotEof(in);
+
+	return std::make_shared<Json::Object>(Json::Object(props));
 }
